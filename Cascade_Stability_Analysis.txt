@@ -1,0 +1,152 @@
+STABILITY, UNIQUENESS, AND MULTIPLICITY ANALYSIS FOR CSTR CASCADES
+====================================================================
+Reference: Bremer, J. & Sundmacher, K. (2021), "Novel Multiplicity and
+Stability Criteria for Non-Isothermal Fixed-Bed Reactors", Frontiers in
+Energy Research 8:549298, Eqs. (11)-(19), Figs. 7-12.
+
+
+1. Stage-Wise Mass and Energy Balances (n-Stage CSTR Cascade)
+-------------------------------------------------------------
+When a tubular / fixed-bed reactor of total residence time tau and total
+Stanton number St is discretized into an n-stage CSTR cascade in series
+(uniform stages, Bodenstein analogy Bo = 2n), each stage i in {1,...,n}
+receives:
+  - Stage residence time factor : C_n  = tau / (n * eps * c_CO2,in)
+  - Stage Stanton number        : St_n = St / n
+  - Effective adiabatic rise    : dT_ad,i = (1 - X_CO2^(i-1)) * dT_ad
+  - Effective operating temp.   : T_op,i  = (T^{i-1} + St_n * T_cool) / (1 + St_n)
+    (with inlet conditions X_CO2^(0) = 0 and T^{0} = T_in = T_cool).
+
+The steady-state stage conversion X_CO2^{i} = X_CO2^(i) - X_CO2^(i-1) and
+stage temperature T^{i} satisfy the stage-wise balances:
+
+  Stage Mass Balance (Heat Generation):
+      X_CO2^{i} = C_n * R_meth(T^{i}, p, w_alpha^(i))
+
+  Stage Energy Balance (Heat Removal):
+      X_CO2^{i} = [ (1 + St_n) / dT_ad,i ] * (T^{i} - T_op,i)
+
+Each stage i can exhibit up to three intersections (OP 1, OP 2, OP 3)
+conditioned on the upstream outlet state (T^{i-1}, X_CO2^(i-1)).
+
+
+2. Block Lower-Triangular Jacobian & Cascade Stability Theorem
+--------------------------------------------------------------
+In a cascade without recycle, the transient mass and energy balances of
+stage i depend only on stage i's own state variables and the feed from
+upstream stages 1, ..., i-1 (purely feedforward coupling).
+
+Consequently, the full 2n x 2n dynamic Jacobian matrix J of the cascade
+evaluated at any steady-state path [s_1 - s_2 - ... - s_n] (with
+s_i in {1, 2, 3}) is BLOCK LOWER-TRIANGULAR:
+
+      [ J_11    0      ...    0   ]
+  J = [ J_21   J_22    ...    0   ]
+      [  ...    ...    ...   ...  ]
+      [ J_n1   J_n2    ...   J_nn ]
+
+Because the eigenvalues of a block lower-triangular matrix are simply the
+union of the eigenvalues of its diagonal 2 x 2 blocks J_ii (i = 1,...,n),
+cascade stability decomposes cleanly stage by stage:
+
+  1) Local Stage Stability Condition (Stage i):
+     Stage i is locally asymptotically stable if and only if its heat-
+     generation slope is strictly less than its heat-removal slope:
+
+         (dX_CO2^{i,mass} / dT^{i})|_{T^{i}} < (1 + St_n) / dT_ad,i
+
+     (Assuming thermal/Lewis-number damping keeps the trace of J_ii
+     negative, stability is governed by det(J_ii) > 0, which matches the
+     van Heerden slope inequality above.)
+
+  2) Cascade Stability Rule:
+     A cascade steady-state path [s_1 - s_2 - ... - s_n] is asymptotically
+     STABLE if and only if EVERY stage i = 1, ..., n is locally stable:
+
+         all s_i in {1, 3}   (NO stage operates on OP 2).
+
+     If ANY stage k operates on OP 2 (s_k = 2), that diagonal block J_kk
+     has a positive real eigenvalue (saddle instability). A small
+     perturbation +-delta T^{k} drives stage k away from OP 2 toward either
+     OP 1 (extinction) or OP 3 (ignition), which then shifts T_op,j and
+     dT_ad,j of all downstream stages j > k until the entire cascade
+     settles onto an all-{1, 3} stable configuration.
+
+Note on Unequal Stage Volumes (see Novelty/novelty.m):
+  If total volume is partitioned unequally with fractions phi_i (sum = 1),
+  then tau_i = phi_i * tau and St_i = phi_i * St. The Jacobian remains
+  block lower-triangular, so stability is still determined by the union
+  of the 2 x 2 diagonal block eigenvalues (equivalently, the slope test
+  with C_i and St_i at every stage i).
+
+
+3. Suppression of Downstream Multiplicity & Pattern Reduction (3^n -> 4n - 1)
+-----------------------------------------------------------------------------
+Although 3^n formal combinations exist for n stages, upstream conversion
+strongly constrains downstream multiplicity:
+
+  - Effect of an Ignited Stage (OP 3):
+    When stage k ignites to OP 3, X_CO2^(k) becomes large. For every
+    downstream stage i > k, the remaining adiabatic temperature rise
+    dT_ad,i = (1 - X_CO2^(i-1)) * dT_ad drops sharply, making the energy-
+    balance slope m_i = (1 + St_n) / dT_ad,i much steeper. Simultaneously,
+    reactant depletion lowers the maximum mass-balance slope
+    max_T (dX_i^m / dT). Whenever
+
+        max_T (dX_i^m / dT) < (1 + St_n) / dT_ad,i,
+
+    we have d[X_i^m(T) - X_i^e(T)] / dT < 0 everywhere, guaranteeing at
+    most one intersection (uniquely OP 1, unconditionally stable). Thus
+    patterns such as [3-2] and [3-3] are eliminated.
+
+  - Effect of an Intermediate Stage (OP 2):
+    A stage on OP 2 consumes only moderate reactant, leaving enough
+    reaction potential for the immediately following stage to reach OP 2
+    or OP 3 over a narrow coolant-temperature window (producing the fragile
+    adjacent pairs [2-2] and [2-3]).
+
+This two-key-stage reaction-front hierarchy reduces the 3^n combinations
+to at most (4n - 1) physically relevant candidate patterns:
+
+  Pattern Family                         Count     Stability Status
+  ---------------------------------------------------------------------
+  [1 - 1 - ... - 1]  (all extinguished)    1       STABLE (lower branch)
+  [... - 1 - 3 - 1 - ...] (single OP 3)    n       STABLE (ignited front)
+  [... - 1 - 2 - 1 - ...] (single OP 2)    n       UNSTABLE (saddle)
+  [... - 1 - 2 - 2 - 1 - ...]             n - 1    UNSTABLE (fragile)
+  [... - 1 - 2 - 3 - 1 - ...]             n - 1    UNSTABLE (fragile)
+  ---------------------------------------------------------------------
+  Total candidate patterns              4n - 1     At most (n + 1) stable!
+
+Key Result: Out of up to (4n - 1) steady-state candidate branches, ONLY the
+all-extinguished path [1-1-...-1] and the n single-ignition-front paths
+[...-1-3-1-...] (at most n + 1 branches in total) are physically stable
+and observable in steady operation. All remaining (3n - 2) paths contain at
+least one OP 2 stage and act as unstable separatrix/threshold surfaces
+governing ignition and extinction hysteresis jumps.
+
+
+4. Global Uniqueness Criterion for Cascades & Dispersion Model (Eqs. 15-19)
+---------------------------------------------------------------------------
+To guarantee that multiplicity and ALL unstable OP 2 branches vanish across
+the entire cascade for EVERY coolant temperature T_cool, every stage must
+satisfy the global uniqueness condition (Bremer & Sundmacher, 2021, Eqs.
+16-19; validated in validate_cascade_criteria.m):
+
+  Using the Bodenstein equivalence Bo = 2n and C_Bo = (2/Bo)*(tau/(eps*c_in)):
+
+      max_{T, X} ( dX_tilde / dT )  <  (1 + St / n) / dT_ad
+                                    =  (1 + 2 * St / Bo) / dT_ad
+
+Physical Interpretation:
+  - As n increases (higher Bo = 2n, lower axial dispersion), the per-stage
+    reaction factor C_n = C_1 / n shrinks faster than the cooling slope
+    shrinks toward 1 / dT_ad, lowering the maximum mass-balance sensitivity
+    max(dX_tilde / dT).
+  - Above a critical stage count n_crit (equivalently Bo_crit = 2 * n_crit),
+    the mass-balance curve is everywhere flatter than the energy-balance
+    line:
+      * Hysteresis loops and ignition/extinction jumps disappear completely.
+      * Every stage possesses a unique, globally asymptotically stable
+        steady state for all T_cool.
+      * Thermal runaway / multiplicity-induced hotspot jumps are eliminated.

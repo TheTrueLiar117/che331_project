@@ -12,9 +12,11 @@ p.eps        = 0.4;           % Bed void fraction [-]
 p.eta_meth   = 1.0;           % Catalyst effectiveness factor [-]
 p.tau        = 0.2;           % Total cascade residence time [s]
 
-% Inlet CO2 concentration for Fig. 6 (T_op = 550 K):
-% (Set p.c_CO2_in = 40.0 if you want the unadjusted Table S1 300 K value)
-p.c_CO2_in   = 26.365;        % [mol/m^3]
+% Inlet CO2 concentration: Table S1 reference value (inlet conditions, T_in ~ 300 K, p = 5 bar).
+% Using 40.0 mol/m^3 as stated in Table S1. The mass balance always references
+% INLET c_CO2,in; using c_in at reaction temperature (e.g. 26.365 at 550 K)
+% would inflate C_1 by ~52% and shift the operating-line slopes -- incorrect.
+p.c_CO2_in   = 40.0;          % [mol/m^3]  Table S1 (inlet conditions)
 p.C_1        = p.tau / (p.eps * p.c_CO2_in); % Single CSTR constant C_1 [m^3*s/mol]
 p.C_2        = p.C_1 / 2.0;                  % 2-Stage constant C_2 = C_1 / 2 [m^3*s/mol]
 

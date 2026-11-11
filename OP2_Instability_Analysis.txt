@@ -1,0 +1,92 @@
+STABILITY, UNIQUENESS, AND MULTIPLICITY ANALYSIS
+================================================
+
+1. Physical and Mathematical Proof of OP 2 Instability
+------------------------------------------------------
+
+In a non-isothermal Continuous Stirred Tank Reactor (CSTR), steady-state operation
+requires the simultaneous satisfaction of the nonlinear species mass balance and
+the linear energy balance:
+
+  Mass Balance (Heat Generation):
+      X_CO2 = [ tau / (eps * c_CO2,in) ] * R_meth(T, p, w_alpha)
+
+  Energy Balance (Heat Removal):
+      X_CO2 = [ (1 + St) / dT_ad ] * (T - T_op)
+
+Under conditions of thermo-kinetic multiplicity, these two curves intersect at
+three operating points:
+  - OP 1: Lower extinguished state (stable)
+  - OP 2: Intermediate state (unstable)
+  - OP 3: Upper ignited state (stable)
+
+While OP 1 and OP 3 are asymptotically stable, OP 2 is inherently unstable.
+This instability can be established through both physical perturbation reasoning
+(following van Heerden, 1953) and mathematical sensitivity analysis:
+
+
+A. Physical Perturbation Mechanism (van Heerden, 1953)
+------------------------------------------------------
+Because reaction heat release is directly proportional to conversion
+(Q_dot_gen proportional to X_CO2 * dT_ad), the S-shaped mass balance curve
+represents dimensionless chemical heat generation, while the straight energy
+balance line represents dimensionless heat removal by convection and jacket
+cooling. At OP 2, the mass balance curve crosses the energy balance line from
+below to above as temperature increases.
+
+  - Positive Temperature Disturbance (+delta T at OP 2):
+    If a small positive temperature disturbance (+delta T) occurs at OP 2, the
+    mass balance curve lies above the energy balance line. Chemical heat
+    generation exceeds heat removal (Q_gen > Q_rem), causing net thermal
+    accumulation (dT/dt > 0) that drives a self-accelerating temperature
+    excursion until the reactor settles at the upper stable ignited state (OP 3).
+
+  - Negative Temperature Disturbance (-delta T at OP 2):
+    Conversely, if a small negative temperature disturbance (-delta T) occurs at
+    OP 2, the mass balance curve falls below the energy balance line. Heat
+    removal exceeds heat generation (Q_rem > Q_gen), giving net cooling
+    (dT/dt < 0), cooling the reactor down until it extinguishes at the lower
+    stable state (OP 1).
+
+
+B. Mathematical Slope Condition
+-------------------------------
+Geometrically, the mass balance curve crosses the energy balance line from below
+to above at OP 2 only because the mass-based thermal sensitivity (slope of the
+mass balance curve, dX/dT) is steeper than the energy-based thermal sensitivity
+(slope of the energy balance line, (1 + St) / dT_ad).
+
+Taking the total differential of the implicit mass balance at constant
+residence time tau and inlet concentration c_in yields the exact rate-based
+thermal sensitivity:
+
+      dX     [ tau / (eps * c_in) ] * (dR / dT)_X
+      --  =  -------------------------------------
+      dT     1 - [ tau / (eps * c_in) ] * (dR / dX)_T
+
+Here (dR / dT)_X and (dR / dX)_T denote the partial derivatives of R_meth with
+respect to T and X, respectively.
+
+Local Stability Criterion:
+  A steady state is locally stable if and only if:
+      (dX / dT)|_mass < (1 + St) / dT_ad
+
+Evaluation at the Three Operating Points:
+  - At OP 2: Rapid Arrhenius rate acceleration (dR/dT >> 0) dominates over
+    reactant depletion (dR/dX < 0), causing:
+        (dX / dT)|_OP2 > (1 + St) / dT_ad
+    which violates the local stability criterion and makes OP 2 unstable.
+
+  - At OP 1: Low temperature keeps the Arrhenius reaction rate small, so dX/dT
+    remains strictly below (1 + St) / dT_ad, ensuring asymptotic stability.
+
+  - At OP 3: Near thermodynamic equilibrium and reactant depletion, where
+    dR/dT <= 0, the mass-balance slope remains strictly below the cooling
+    threshold (1 + St) / dT_ad, ensuring asymptotic stability.
+
+
+Reference
+---------
+Bremer, J. & Sundmacher, K. (2021). Novel Multiplicity and Stability Criteria
+for Non-Isothermal Fixed-Bed Reactors. Frontiers in Energy Research, 8:549298.
+DOI: 10.3389/fenrg.2020.549298.

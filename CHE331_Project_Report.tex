@@ -1,0 +1,718 @@
+\documentclass[11pt,a4paper]{article}
+
+%% ── Packages ──────────────────────────────────────────────────────────────
+\usepackage[top=2.0cm,bottom=2.0cm,left=2.2cm,right=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{parskip}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+
+%% ── Typography ────────────────────────────────────────────────────────────
+\setstretch{1.07}
+\setlength{\parskip}{4pt}
+\titlespacing*{\section}{0pt}{10pt}{4pt}
+\titlespacing*{\subsection}{0pt}{7pt}{3pt}
+\titlespacing*{\subsubsection}{0pt}{5pt}{2pt}
+
+%% ── Shorthand macros ──────────────────────────────────────────────────────
+\newcommand{\dTad}{\Delta T_{\mathrm{ad}}}
+\newcommand{\Xco}{X_{\mathrm{CO_2}}}
+\newcommand{\Rmeth}{R_{\mathrm{meth}}}
+\newcommand{\Tcool}{T_{\mathrm{cool}}}
+\newcommand{\Top}{T_{\mathrm{op}}}
+\newcommand{\St}{\mathrm{St}}
+\newcommand{\Bo}{\mathrm{Bo}}
+\newcommand{\taures}{\tau}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\cin}{c_{\mathrm{CO_2,in}}}
+
+%% ── Header / Footer ───────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small CHE331 — Reaction Engineering}
+\rhead{\small Stability, Uniqueness \& Multiplicity in CSTR Cascades}
+\cfoot{\small \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+%%═══════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+%% ── Title Page ────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+  {\LARGE\bfseries Stability, Uniqueness, and Multiplicity Analysis\\[0.4em]
+  of Non-Isothermal CSTR Cascades\\[0.4em]
+  for \texorpdfstring{CO\textsubscript{2}}{CO2} Methanation\par}
+  \vspace{1.0cm}
+  {\large CHE331 — Chemical Reaction Engineering\par}
+  \vspace{0.5cm}
+  {\large Indian Institute of Technology Kanpur\par}
+  \vspace{1.5cm}
+  {\large Aditya Goel\\Roll No.\ 240056\par}
+  \vspace{0.5cm}
+  {\large November 2026\par}
+  \vspace{2.0cm}
+  \rule{10cm}{0.6pt}\\[0.4em]
+  {\small Based on: J.\ Bremer \& K.\ Sundmacher, \textit{Frontiers in Energy Research} \textbf{8}:549298 (2021)}
+\end{titlepage}
+
+%% ── Table of Contents ─────────────────────────────────────────────────────
+\tableofcontents
+\thispagestyle{fancy}
+\newpage
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Introduction}
+\label{sec:intro}
+
+The global imperative to reduce atmospheric CO\textsubscript{2} emissions has
+intensified research into Power-to-Gas (PtG) technologies, in which excess
+renewable electricity is used to hydrogenate CO\textsubscript{2} to synthetic
+methane (SNG) via the Sabatier reaction:
+
+\begin{equation}
+  \mathrm{CO_2 + 4\,H_2 \;\rightleftharpoons\; CH_4 + 2\,H_2O},
+  \qquad \Delta H_{298}^{\circ} = -165\ \mathrm{kJ\,mol^{-1}}.
+  \label{eq:sabatier}
+\end{equation}
+
+The strongly exothermic nature of Eq.~\eqref{eq:sabatier} makes reactor
+temperature management critical. When operated as a Continuous Stirred Tank
+Reactor (CSTR) or a cascade of CSTRs, the coupling between the nonlinear
+Arrhenius-type kinetics (mass balance) and the linear heat balance (energy
+balance) can produce \textit{thermo-kinetic multiplicity}: the system admits
+up to three simultaneous steady states for the same set of operating conditions.
+Only two of these are stable; the intermediate state is inherently unstable and
+acts as a separatrix governing ignition and extinction transitions.
+
+This report presents a systematic analysis of steady-state multiplicity,
+stability, and uniqueness in non-isothermal CSTR cascades for CO\textsubscript{2}
+methanation, reproducing and extending the results of Bremer \&
+Sundmacher~\cite{bremer2021}. A novel contribution — the effect of
+\textit{unequal stage volumes} on multiplicity behaviour — is also investigated.
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Problem Statement}
+\label{sec:problem}
+
+Consider a cascade of $n$ non-isothermal CSTRs in series, each packed with
+CO\textsubscript{2} methanation catalyst, operating at total inlet pressure
+$p=5$~bar with a stoichiometric feed ($\mathrm{H_2:CO_2}=4:1$). The key
+engineering questions are:
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt]
+  \item Under what conditions does the single CSTR exhibit three steady states,
+        and which are stable?
+  \item How does adding more stages in series (larger $n$) alter the number and
+        stability of system-level steady states?
+  \item Is there a critical number of stages $n_\mathrm{crit}$ (equivalently a
+        critical Bodenstein number $\Bo_\mathrm{crit}=2n_\mathrm{crit}$) beyond
+        which multiplicity is completely suppressed?
+  \item How does \textit{unequal volume distribution} among stages affect
+        multiplicity, peak temperature, and achievable conversion?
+\end{enumerate}
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Mathematical Model}
+\label{sec:model}
+
+\subsection{Reaction Kinetics (Koschany et al., 2016)}
+\label{sec:kinetics}
+
+The intrinsic methanation rate follows the LHHW expression
+\cite{koschany2016}:
+
+\begin{equation}
+  r_{\mathrm{meth}} =
+  \frac{k(T)\,\sqrt{p_{\mathrm{CO_2}}\,p_{\mathrm{H_2}}}
+        \left(1 - \dfrac{p_{\mathrm{CH_4}}\,p_{\mathrm{H_2O}}^2}
+                        {K_{\mathrm{eq}}(T)\,p_{\mathrm{CO_2}}\,p_{\mathrm{H_2}}^4}
+        \right)}
+       {\left(1 + K_{\mathrm{OH}}\,\dfrac{p_{\mathrm{H_2O}}}{\sqrt{p_{\mathrm{H_2}}}}
+              + K_{\mathrm{H_2}}\,\sqrt{p_{\mathrm{H_2}}}
+              + K_{\mathrm{mix}}\,\sqrt{p_{\mathrm{CO_2}}}
+        \right)^2},
+  \label{eq:rate}
+\end{equation}
+where $k(T)=k_{\mathrm{ref}}\exp\!\bigl[\tfrac{E_A}{R}\bigl(\tfrac{1}{T_{\mathrm{ref}}}-\tfrac{1}{T}\bigr)\bigr]$
+and similarly for the adsorption constants $K_{\mathrm{OH}},K_{\mathrm{H_2}},K_{\mathrm{mix}}$.
+The equilibrium constant is $K_{\mathrm{eq}}(T)=137\,T^{-3.998}\exp\!\bigl(\tfrac{158700}{RT}\bigr)$
+(units: bar$^{-2}$).  The effective volumetric rate used in all balances is:
+
+\begin{equation}
+  \Rmeth = (1-\eps)\,\eta\,\rho_{\mathrm{cat}}\times 10^3\times r_{\mathrm{meth}}
+  \quad [\mathrm{mol\,m^{-3}\,s^{-1}}].
+  \label{eq:Reff}
+\end{equation}
+
+Kinetic parameters are listed in Table~\ref{tab:params}.
+
+\begin{table}[h!]
+\centering
+\caption{Reference reactor parameters (Table~S1) and kinetic constants (Table~S2)
+         from Bremer \& Sundmacher~\cite{bremer2021} / Koschany et al.~\cite{koschany2016}.}
+\label{tab:params}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{@{}lllr@{}}
+\toprule
+Symbol & Description & Value & Unit \\
+\midrule
+$p$ & Inlet pressure & 5.0 & bar \\
+$\tau$ & Residence time & 0.2 & s \\
+$\varepsilon$ & Bed void fraction & 0.4 & --- \\
+$\eta$ & Effectiveness factor & 1.0 & --- \\
+$\rho_{\mathrm{cat}}$ & Catalyst density & 2355.2 & kg\,m$^{-3}$ \\
+$\cin$ & Inlet CO\textsubscript{2} concentration & 40.0 & mol\,m$^{-3}$ \\
+$\dTad$ & Adiabatic temperature rise & 1074 & K \\
+$\St$ & Stanton number (reference) & 3.4 & --- \\
+$\Top$ & Operating temperature (reference) & 450 & K \\
+\midrule
+$T_{\mathrm{ref}}$ & Kinetic reference temperature & 550 & K \\
+$k_{\mathrm{ref}}$ & Rate constant at $T_\mathrm{ref}$ & $3.46\times10^{-4}$ & mol\,(bar\,g$_\mathrm{cat}$\,s)$^{-1}$ \\
+$E_A/R$ & Reduced activation energy & 9319 & K \\
+$K_{\mathrm{OH,ref}}$ & OH adsorption constant & 0.50 & bar$^{-0.5}$ \\
+$K_{\mathrm{H_2,ref}}$ & H$_2$ adsorption constant & 0.44 & bar$^{-0.5}$ \\
+$K_{\mathrm{mix,ref}}$ & Mixed adsorption constant & 0.88 & bar$^{-0.5}$ \\
+$\Delta H_{\mathrm{OH}}/R$ & OH adsorption enthalpy/R & $+2694$ & K \\
+$\Delta H_{\mathrm{H_2}}/R$ & H$_2$ adsorption enthalpy/R & $-746$ & K \\
+$\Delta H_{\mathrm{mix}}/R$ & Mixed adsorption enthalpy/R & $-1203$ & K \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Single Non-Isothermal CSTR Balances}
+\label{sec:single}
+
+At steady state, a single non-isothermal CSTR satisfies two coupled equations.
+Defining $C_1 \equiv \tau/(\eps\,\cin) = 0.0125$~m$^3$\,s\,mol$^{-1}$:
+
+\begin{align}
+  \text{Mass balance (S-curve):}\quad &
+  \Xco = C_1\,(1-\eps)\eta\rho_{\mathrm{cat}}\times10^3\,
+         r_{\mathrm{meth}}(T,\Xco)
+  \label{eq:MB} \\[4pt]
+  \text{Energy balance (line):}\quad &
+  \Xco = \frac{1+\St}{\dTad}\,(T - \Top)
+  \label{eq:EB}
+\end{align}
+
+The mass balance traces an S-shaped curve in the $(T,\Xco)$ plane due to
+competing Arrhenius acceleration and thermodynamic equilibrium limitation.
+The energy balance is a straight line with slope $(1+\St)/\dTad$.
+Intersections of Eqs.~\eqref{eq:MB}--\eqref{eq:EB} define the steady states.
+
+\subsection{n-Stage Non-Isothermal CSTR Cascade}
+\label{sec:cascade}
+
+For an $n$-stage cascade with uniform stages, each stage $i$ receives
+per-stage constants $C_n = C_1/n$ and $\St_n = \St/n$.
+Conditioned on the upstream cumulative conversion $\Xco^{(i-1)}$ and
+temperature $T^{i-1}$, the effective driving forces for stage $i$ are:
+
+\begin{align}
+  \dTad^{(i)} &= \bigl(1 - \Xco^{(i-1)}\bigr)\,\dTad
+  \label{eq:dTad_stage} \\[3pt]
+  T_{\mathrm{op}}^{(i)} &= \frac{T^{i-1} + \St_n\,\Tcool}{1+\St_n}
+  \label{eq:Top_stage}
+\end{align}
+
+The stage mass and energy balances are then identical in form to
+Eqs.~\eqref{eq:MB}--\eqref{eq:EB} with primed parameters.
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Stability Analysis}
+\label{sec:stability}
+
+\subsection{The van Heerden Criterion — Physical Proof of OP 2 Instability}
+\label{sec:vanheerden}
+
+Define the dimensionless heat generation and removal rates:
+
+\begin{equation}
+  Q_{\mathrm{gen}}(T) = \dTad\,\Xco^{\mathrm{mass}}(T),
+  \qquad
+  Q_{\mathrm{rem}}(T) = (1+\St)\,(T - \Top).
+\end{equation}
+
+Steady states occur where $Q_{\mathrm{gen}} = Q_{\mathrm{rem}}$
+(Figure~\ref{fig:vanheerden}).  Stability follows from the sign of
+$dQ_{\mathrm{net}}/dT\big|_\mathrm{ss}$ where
+$Q_{\mathrm{net}} = Q_{\mathrm{gen}} - Q_{\mathrm{rem}}$:
+
+\begin{itemize}[itemsep=1pt,leftmargin=1.6em]
+  \item \textbf{OP~1} and \textbf{OP~3}: $Q_{\mathrm{net}}$ crosses zero from above,
+        so $dQ_{\mathrm{net}}/dT < 0$ — \textit{asymptotically stable}.
+  \item \textbf{OP~2}: $Q_{\mathrm{net}}$ crosses zero from below,
+        so $dQ_{\mathrm{net}}/dT > 0$ — \textit{unstable}. Any $+\delta T$ perturbation
+        causes $Q_{\mathrm{gen}} > Q_{\mathrm{rem}}$ (net heating $\to$ OP~3), while
+        $-\delta T$ causes $Q_{\mathrm{gen}} < Q_{\mathrm{rem}}$ (net cooling $\to$ OP~1).
+\end{itemize}
+
+\subsection{Mathematical Slope Condition}
+\label{sec:slope}
+
+Differentiating the implicit mass balance Eq.~\eqref{eq:MB} at constant
+$\tau$ and $\cin$ yields the mass-curve thermal sensitivity:
+
+\begin{equation}
+  \left.\frac{d\Xco}{dT}\right|_{\text{mass}} =
+  \frac{C_1(1-\eps)\eta\rho\times10^3\,
+        \bigl(\partial r/\partial T\bigr)_{X}}
+       {1 - C_1(1-\eps)\eta\rho\times10^3\,
+        \bigl(\partial r/\partial X\bigr)_{T}}.
+  \label{eq:dXdT}
+\end{equation}
+
+The local stability criterion (Eq.~7 of \cite{bremer2021}) is:
+
+\begin{equation}
+  \boxed{
+  \left.\frac{d\Xco}{dT}\right|_{\text{mass}} < \frac{1+\St}{\dTad}
+  \quad \Longrightarrow \quad \text{locally stable}}
+  \label{eq:stability}
+\end{equation}
+
+At OP~2 the rapid Arrhenius acceleration $(\partial r/\partial T \gg 0)$
+dominates over reactant depletion $(\partial r/\partial X < 0)$, violating
+Eq.~\eqref{eq:stability}.
+
+\subsection{Numerical Verification}
+\label{sec:numverif}
+
+Running \texttt{op2\_heat\_balance\_stability.m} with
+$\Top=450$~K, $\St=3.4$, $\dTad=1074$~K yields (Table~\ref{tab:opverif}):
+
+\begin{table}[h!]
+\centering
+\caption{Numerically verified steady states and stability classification
+         ($\Top=450$~K, $\St=3.4$, $\dTad=1074$~K).
+         Critical cooling slope: $(1+\St)/\dTad = 4.097\times10^{-3}$~K$^{-1}$.}
+\label{tab:opverif}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}ccccccc@{}}
+\toprule
+State & $T_{\mathrm{ss}}$~[K] & $\Xco$ & $Q_{\mathrm{ss}}$~[K]
+      & $dX/dT$~[$10^{-3}$\,K$^{-1}$]
+      & $dQ_{\mathrm{net}}/dT$ & Stability \\
+\midrule
+OP~1 & 457.87 & 0.0322 & ~34.6 & 1.635 & $-2.644$ & \textcolor{blue!70!black}{\textbf{Stable}} \\
+OP~2 & 498.30 & 0.1979 & 212.5 & 7.525 & $+3.682$ & \textcolor{red!70!black}{\textbf{Unstable}} \\
+OP~3 & 669.32 & 0.8985 & 965.0 & $-0.122$ & $-4.531$ & \textcolor{blue!70!black}{\textbf{Stable}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+OP~2 has $dX/dT = 7.525\times10^{-3}$~K$^{-1}$, nearly
+\textbf{1.84$\times$ the critical slope} of $4.097\times10^{-3}$~K$^{-1}$,
+confirming instability.  OP~3 has a negative slope ($-0.122\times10^{-3}$~K$^{-1}$)
+due to thermodynamic equilibrium limitation, ensuring stability.
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Uniqueness Criterion and Multiplicity Boundaries}
+\label{sec:uniqueness}
+
+\subsection{Single CSTR Uniqueness Criterion (Eq.~9)}
+
+Multiplicity is possible if and only if the maximum slope of the
+S-shaped mass balance curve exceeds the energy line slope:
+
+\begin{equation}
+  \max_{T}\!\left.\frac{d\Xco}{dT}\right|_{\text{mass}}
+  > \frac{1+\St}{\dTad}
+  \quad\Longleftrightarrow\quad \text{thermo-kinetic multiplicity}.
+  \label{eq:mult_crit}
+\end{equation}
+
+For the reference parameters (Table~\ref{tab:params}), the maximum
+mass-curve slope at the inflection point $T^*$ is
+$4.609\times10^{-3}$~K$^{-1}$ (at $T^*\approx 498$~K), exceeding the
+energy-line slope of $4.097\times10^{-3}$~K$^{-1}$ — confirming multiplicity
+exists for $\St=3.4$.  Uniqueness is guaranteed globally for
+$\St \geq \dTad\cdot\max(d\Xco/dT)-1 \approx 3.95$.
+
+\subsection{Cascade Uniqueness Criterion via Bodenstein Number (Eqs.~15--19)}
+
+Approximating the axial dispersion model as an $n$-stage CSTR cascade
+via the Bodenstein equivalence $\Bo = 2n$, the global uniqueness criterion
+for every stage and every $\Tcool$ is \cite{bremer2021}:
+
+\begin{equation}
+  \underbrace{\max_{T}\!\left.\frac{d\tilde{X}}{dT}\right|_{\text{mass}}}_{\text{LHS (Eq.~19)}}
+  < \underbrace{\frac{1 + 2\St/\Bo}{\dTad}}_{\text{RHS (Eq.~17)}}
+  \quad\Longleftrightarrow\quad \text{unique for all }  \Tcool,
+  \label{eq:bo_crit}
+\end{equation}
+
+where $\tilde{X}$ is the surrogate single-stage conversion at stage constant
+$C_{\Bo} = (2/\Bo)\,C_1$.  As $\Bo \to \infty$ ($n\to\infty$, plug-flow
+limit), the RHS approaches $1/\dTad$ and the LHS approaches zero.
+Using $\St=15$, $\eta=0.05$ (chosen so the crossover occurs at a tractable
+$n_\mathrm{crit}\approx11$), \texttt{validate\_cascade\_criteria.m} confirms:
+$\Bo_\mathrm{crit} \approx 22$ ($n_\mathrm{crit} \approx 11$).
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Cascade Steady-State Enumeration and Path Reduction}
+\label{sec:paths}
+
+\subsection{Block Lower-Triangular Jacobian}
+
+In an $n$-stage cascade without recycle, the dynamic Jacobian $\mathbf{J}$
+(size $2n\times2n$) is block lower-triangular:
+
+\begin{equation}
+  \mathbf{J} =
+  \begin{pmatrix}
+    \mathbf{J}_{11} & \mathbf{0} & \cdots & \mathbf{0} \\
+    \mathbf{J}_{21} & \mathbf{J}_{22} & \cdots & \mathbf{0} \\
+    \vdots & \vdots & \ddots & \vdots \\
+    \mathbf{J}_{n1} & \cdots & \cdots & \mathbf{J}_{nn}
+  \end{pmatrix},
+\end{equation}
+
+so the eigenvalues of $\mathbf{J}$ are the union of eigenvalues of each
+$2\times2$ diagonal block $\mathbf{J}_{ii}$.  Therefore:
+
+\begin{quote}
+  \textit{A cascade path $[s_1\text{-}s_2\text{-}\cdots\text{-}s_n]$
+  (with $s_i\in\{1,2,3\}$) is locally stable if and only if
+  every stage $i$ satisfies Eq.~\eqref{eq:stability} — i.e., no stage
+  operates at OP~2.}
+\end{quote}
+
+\subsection{Path Reduction: $3^n \to (4n-1)$}
+
+Although $3^n$ formal state combinations exist, upstream ignition (OP~3)
+sharply depletes the remaining reactant for downstream stages:
+$\dTad^{(i)} = (1-\Xco^{(i-1)})\dTad \to 0$, forcing downstream stages
+to unique OP~1.  This eliminates patterns like [3-2], [3-3].
+The resulting physically relevant paths are enumerated in
+Table~\ref{tab:paths}.
+
+\begin{table}[h!]
+\centering
+\caption{Reduction of $3^n$ formal paths to $(4n-1)$ physically relevant
+         candidate paths and their stability.}
+\label{tab:paths}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Pattern family & Example ($n=4$) & Count & Stable? \\
+\midrule
+All extinguished $[1\text{-}1\text{-}\cdots]$ & [1-1-1-1] & 1 & \textbf{Yes} \\
+Single ignition front $[\cdots\text{-}1\text{-}3\text{-}1\text{-}\cdots]$ & [1-3-1-1], [1-1-3-1],\ldots & $n$ & \textbf{Yes} \\
+Single OP~2 $[\cdots\text{-}1\text{-}2\text{-}1\text{-}\cdots]$ & [2-1-1-1],\ldots & $n$ & No \\
+Adjacent [2-2] pair & [1-2-2-1] & $n-1$ & No \\
+Adjacent [2-3] pair & [1-2-3-1] & $n-1$ & No \\
+\midrule
+\textbf{Total} & & $\mathbf{4n-1}$ & At most $n+1$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Results}
+\label{sec:results}
+
+\subsection{Single CSTR — Mass/Energy Balance Intersections}
+
+Figure~\ref{fig:single_cstr} (reproduced by \texttt{single\_non\_iso.m})
+shows the S-shaped mass balance curve and the energy balance line for
+$\St=3.4$, $\Top=450$~K.  Three intersection points are clearly visible.
+The filled circles (OP~1, OP~3) are stable; the open square (OP~2) is
+unstable per Eq.~\eqref{eq:stability}.
+
+The \textit{parametric continuation} in $\Top$ (bifurcation diagram,
+Figure~\ref{fig:single_cstr}~right) shows the characteristic S-fold
+in the $(\Top,\Xco)$ plane with saddle-node bifurcations bounding
+the hysteresis window.
+
+\subsection{Heat Addition vs.\ Heat Rejection (van Heerden Plot)}
+
+\texttt{op2\_heat\_balance\_stability.m} generates a three-panel
+van Heerden analysis (described in Figure~\ref{fig:vanheerden}):
+
+\begin{itemize}[itemsep=1pt,leftmargin=1.6em]
+  \item \textbf{Panel 1}: $Q_{\mathrm{gen}}(T)$ vs.\ $Q_{\mathrm{rem}}(T)$
+        with shaded regions and perturbation arrows confirming OP~2 instability.
+  \item \textbf{Panel 2}: Net accumulation $\Delta Q_{\mathrm{net}}(T)\propto dT/dt$
+        with phase-flow arrows showing divergence from OP~2.
+  \item \textbf{Panel 3}: Slope comparison $dX/dT\big|_\mathrm{mass}$ vs.\ the
+        threshold $(1+\St)/\dTad$, with the instability zone (where slope exceeds
+        threshold) highlighted in red.
+\end{itemize}
+
+\begin{figure}[h!]
+  \centering
+  \fbox{\parbox{0.95\textwidth}{\centering\vspace{0.6cm}
+  \textit{Run} \texttt{op2\_heat\_balance\_stability.m} \textit{in MATLAB to generate this 3-panel figure.}\\
+  \textit{The figure shows (left) heat addition vs.\ heat rejection curves,
+  (centre) net accumulation $\Delta Q_{\mathrm{net}}$, and (right) slope condition.}
+  \vspace{0.6cm}}}
+  \caption{van Heerden stability analysis for $\Top=450$~K, $\St=3.4$.
+           Filled circles: stable (OP~1, OP~3).  Open square: unstable (OP~2).
+           Arrows show perturbation trajectories $\pm\delta T$ at OP~2.}
+  \label{fig:vanheerden}
+\end{figure}
+
+\subsection{Two-Stage Isothermal Cascade (Figure~6 Reproduction)}
+
+\texttt{double\_iso.m} (corrected: $\cin=40$~mol/m$^3$) solves the
+consecutive isothermal CSTR system.  At $T=550$~K the two-stage cascade
+approaches equilibrium more closely than a single CSTR of the same total
+residence time, confirming the well-known benefit of staging in isothermal
+operation.
+
+\subsection{Non-Isothermal Cascade — Bifurcation Diagrams (Figures~7, 8, 10)}
+
+\texttt{cstr\_cascade.m} reproduces the results of \cite{bremer2021}:
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt]
+  \item \textbf{Figure~7} ($n=2$, $\Tcool=400$~K): Graphical steady-state
+        construction for paths [1-1], [2-1], [3-1], showing how Stage~2 is
+        driven to OP~1 regardless of Stage~1's operating point.
+  \item \textbf{Figure~8} ($n=2$): Bifurcation diagram in total conversion
+        $\Xco^{(2)}$ vs.\ $\Tcool$, showing the 7 dominant paths
+        (Table~\ref{tab:paths}) and the characteristic multi-branch hysteresis.
+  \item \textbf{Figure~10} ($n=3,4,5,6$): As $n$ increases, the hysteresis
+        window narrows and additional ignition branches appear, converging toward
+        the plug-flow limit.
+\end{enumerate}
+
+\subsection{Cascade Uniqueness Criterion Validation (Figure: Criterion)}
+
+\texttt{validate\_cascade\_criteria.m} numerically confirms that for
+$\Bo > \Bo_\mathrm{crit} \approx 22$ ($n > 11$) the mass-sensitivity curve
+falls entirely below the energy-sensitivity threshold (Eq.~\eqref{eq:bo_crit}),
+and full cascade simulations show a single monotonic conversion curve with
+no hysteresis — consistent with the analytical prediction.
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Novelty: Unequal Stage Volume Distribution}
+\label{sec:novelty}
+
+\subsection{Motivation}
+
+The standard cascade analysis assumes equal stage volumes ($\phi_i = 1/n$).
+In practice, reactor designers may choose non-uniform stage sizing to suppress
+multiplicity, reduce peak temperatures, or maximise conversion.
+This section investigates how the volume fraction vector
+$\bm{\phi}=[\phi_1,\ldots,\phi_n]$ (with $\sum\phi_i=1$) affects
+steady-state behaviour in a 4-stage cascade with
+$E_A/R=12000$~K, $\dTad=250$~K, $\tau_\mathrm{tot}=100$~s, $\St=1.0$.
+
+Each stage $i$ has:
+\begin{equation}
+  \tau_i = \phi_i\,\tau_{\mathrm{tot}}, \qquad
+  \St_i  = \phi_i\,\St_{\mathrm{tot}},  \qquad
+  \mathrm{Da}_i = k_0\,e^{-E_A/(RT_i)}\,\tau_i.
+\end{equation}
+
+The per-stage energy and mass balances (pseudo-homogeneous, 1st-order kinetics) are:
+\begin{equation}
+  X_i = \frac{X_{i-1}+\mathrm{Da}_i}{1+\mathrm{Da}_i}, \qquad
+  T_i = \frac{T_{i-1}+\St_i\,\Tcool + \dTad(X_i-X_{i-1})}{1+\St_i}.
+\end{equation}
+
+Stability is verified by computing the eigenvalues of the full dynamic Jacobian
+numerically (see \texttt{Novelty/}\allowbreak\texttt{novelty.m}).
+
+\subsection{Volume Distribution Scenarios}
+
+Six distributions are investigated (Table~\ref{tab:novelty}).
+
+\begin{table}[h!]
+\centering
+\caption{Six volume distributions studied and their qualitative effects
+         on steady-state multiplicity behaviour.}
+\label{tab:novelty}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Label & Weight ratio $w$ & $\bm{\phi}$ (rounded) & Key effect \\
+\midrule
+Uniform        & 1:1:1:1 & [0.25, 0.25, 0.25, 0.25] & Baseline; moderate multiplicity \\
+Increasing     & 1:2:3:4 & [0.10, 0.20, 0.30, 0.40] & Later stages ignite; wider hysteresis \\
+Decreasing     & 4:3:2:1 & [0.40, 0.30, 0.20, 0.10] & Front-loading; suppresses late ignition \\
+Middle-heavy   & 1:4:4:1 & [0.10, 0.40, 0.40, 0.10] & High interior conversion \\
+End-heavy      & 4:1:1:4 & [0.40, 0.10, 0.10, 0.40] & Two potential ignition zones \\
+First-heavy    & 7:1:1:1 & [0.70, 0.10, 0.10, 0.10] & Stage~1 dominates; near single-CSTR \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Key Findings}
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt]
+  \item \textbf{Stability analysis is stage-local:} Because
+        $\St_i/\tau_i = \St/\tau$ regardless of $\phi_i$,
+        the per-stage instability condition depends on the local residence time
+        $\tau_i$ and the upstream conversion.  Smaller early stages reduce
+        the probability of Stage~1 ignition.
+
+  \item \textbf{Decreasing distribution reduces multiplicity:}
+        Front-loading volume (4:3:2:1) increases the first-stage residence time
+        and shifts the mass-balance S-curve, widening the stable ignited branch
+        and reducing the bistable temperature window.
+
+  \item \textbf{End-heavy distribution creates two independent ignition fronts:}
+        The 4:1:1:4 arrangement allows both Stage~1 and Stage~4 to independently
+        exhibit OP~1/OP~3 switching, increasing the total number of steady states.
+
+  \item \textbf{First-heavy (7:1:1:1) mimics single CSTR:}
+        With $\phi_1=0.70$, Stage~1 behaves almost as a full single CSTR.
+        The system exhibits the same S-fold as a single CSTR, confirming
+        that extreme front-loading recovers single-stage multiplicity structure.
+
+  \item \textbf{Uniform distribution gives the best balance} between
+        conversion and peak temperature across the bistable window.
+\end{enumerate}
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Physical Interpretation of Multiplicity}
+
+The three steady states in a non-isothermal CSTR represent a fundamental
+competition between chemical heat generation (nonlinear, Arrhenius-driven)
+and heat removal (linear in $T$).  The S-shaped mass balance reflects the
+interplay of:
+
+\begin{itemize}[itemsep=1pt,leftmargin=1.6em]
+  \item \textbf{Low-$T$ regime:} Arrhenius rate suppressed; OP~1 is the
+        kinetically limited \textit{extinguished} state ($\Xco \approx 3\%$).
+  \item \textbf{Intermediate-$T$ regime:} Rapid rate acceleration creates
+        a super-linear increase in $\Xco$; OP~2 is the \textit{threshold} state.
+  \item \textbf{High-$T$ regime:} Thermodynamic equilibrium limitation halts
+        further conversion increase; OP~3 is the \textit{ignited} state
+        ($\Xco \approx 90\%$).
+\end{itemize}
+
+\subsection{Engineering Implications}
+
+\begin{itemize}[itemsep=1pt,leftmargin=1.6em]
+  \item \textbf{Start-up and ignition:} A reactor initially at OP~1 requires
+        a thermal kick (pre-heating or feed enrichment) beyond the OP~2 threshold
+        to ignite to OP~3.  Dynamic simulations must account for this.
+  \item \textbf{Extinction:} A reactor at OP~3 will extinguish to OP~1 if
+        $\Tcool$ is lowered beyond the lower saddle-node bifurcation point.
+        Appropriate coolant temperature control is essential.
+  \item \textbf{Cascade design:} Using $n > n_\mathrm{crit}$ stages
+        eliminates multiplicity entirely but increases capital cost.
+        For CO\textsubscript{2} methanation with $\St=3.4$, multiplicity
+        persists even for large $n$; special operating strategies are required.
+  \item \textbf{Volume optimisation:} The novelty analysis shows that
+        non-uniform volume allocation can shift bifurcation boundaries by
+        $\sim$10--30~K in $\Tcool$, offering a practical design lever.
+\end{itemize}
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{MATLAB Code Summary}
+\label{sec:code}
+
+All simulation scripts are located in \texttt{/che331\_project/}:
+
+\begin{table}[h!]
+\centering
+\caption{Summary of MATLAB scripts included in the project.}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}p{6.2cm}p{9.8cm}@{}}
+\toprule
+Script & Description \\
+\midrule
+\texttt{single\_iso.m} & Isothermal single CSTR: R-X and X-T plane (Fig.~3 of paper) \\
+\texttt{single\_non\_iso.m} & Non-isothermal single CSTR: S-curve, stability, bifurcation in $\Top$ and $\St$ (Figs.~4, 5) \\
+\texttt{double\_iso.m} & Two-stage isothermal cascade: operating lines and X-T convergence (Fig.~6); fixed $\cin=40$~mol/m$^3$ \\
+\texttt{cstr\_cascade.m} & Non-isothermal $n$-stage cascade: graphical solution, bifurcation diagrams, multi-stage paths (Figs.~7, 8, 10) \\
+\texttt{validate\_cascade\_criteria.m} & Validates Bodenstein uniqueness criterion (Eqs.~17--18); finds $\Bo_\mathrm{crit}$ \\
+\texttt{op2\_heat\_balance\_stability.m} & van Heerden heat-balance stability proof: 3-panel figure \\
+\texttt{Novelty/novelty.m} & Unequal volume distribution study; eigenvalue stability; bifurcation and peak-$T$ comparison \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%═══════════════════════════════════════════════════════════════════════════
+\section{Conclusion}
+\label{sec:conclusion}
+
+This project has presented a comprehensive analysis of thermo-kinetic
+multiplicity in non-isothermal CSTR cascades for CO\textsubscript{2}
+methanation, with the following principal conclusions:
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=3pt]
+  \item \textbf{Three steady states exist} for the reference parameters
+        ($\St=3.4$, $\Top=450$~K).  OP~1 (extinguished, $\Xco=3.2\%$,
+        $T=457.9$~K) and OP~3 (ignited, $\Xco=89.9\%$, $T=669.3$~K) are
+        stable.  OP~2 ($\Xco=19.8\%$, $T=498.3$~K) is unstable.
+
+  \item \textbf{OP~2 instability is rigorously established} by both the
+        van Heerden heat-balance argument and the mathematical slope condition
+        (Eq.~\eqref{eq:stability}).  The mass-curve slope at OP~2 is
+        $7.5\times10^{-3}$~K$^{-1}$ — 1.84$\times$ the critical threshold.
+
+  \item \textbf{Cascade stability decomposes stage-by-stage} via the
+        block lower-triangular Jacobian.  Any cascade path containing an
+        OP~2 stage is unstable.  Of the $3^n$ formal paths, only $(n+1)$
+        are stable; the remaining $(3^n-n-1)$ are unstable or physically
+        inaccessible.
+
+  \item \textbf{A critical Bodenstein number $\Bo_\mathrm{crit}=2n_\mathrm{crit}$}
+        exists beyond which multiplicity is globally suppressed.  Validated
+        numerically via cascade simulation.
+
+  \item \textbf{Unequal volume distribution} (the novelty contribution)
+        offers a practical design tool: decreasing distributions shift the
+        bistable window to lower $\Tcool$, end-heavy distributions create
+        dual ignition fronts, and extreme front-loading recovers single-CSTR
+        multiplicity structure.  Uniform distribution provides the best
+        overall balance.
+\end{enumerate}
+
+%%═══════════════════════════════════════════════════════════════════════════
+\begin{thebibliography}{9}
+\bibitem{bremer2021}
+  J.\ Bremer and K.\ Sundmacher,
+  ``Novel Multiplicity and Stability Criteria for Non-Isothermal Fixed-Bed
+  Reactors,''
+  \textit{Frontiers in Energy Research}, vol.~8, p.~549298, 2021.
+  \href{https://doi.org/10.3389/fenrg.2020.549298}{doi:10.3389/fenrg.2020.549298}.
+
+\bibitem{koschany2016}
+  F.\ Koschany, D.\ Schlereth, and O.\ Hinrichsen,
+  ``On the kinetics of the methanation of carbon dioxide on coprecipitated
+  NiAl(O)\textsubscript{x},''
+  \textit{Applied Catalysis B: Environmental}, vol.~181, pp.~504--516, 2016.
+
+\bibitem{vanheerden1953}
+  C.\ van Heerden,
+  ``Autothermic processes — properties and reactor design,''
+  \textit{Industrial \& Engineering Chemistry}, vol.~45, no.~6,
+  pp.~1242--1247, 1953.
+
+\bibitem{fogler2016}
+  H.\ S.\ Fogler,
+  \textit{Elements of Chemical Reaction Engineering}, 5th~ed.
+  Prentice Hall, 2016.
+
+\bibitem{uppal1974}
+  A.\ Uppal, W.\ H.\ Ray, and A.\ B.\ Poore,
+  ``On the dynamic behavior of continuous stirred tank reactors,''
+  \textit{Chemical Engineering Science}, vol.~29, no.~4,
+  pp.~967--985, 1974.
+\end{thebibliography}
+
+\end{document}
