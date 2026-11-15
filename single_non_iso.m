@@ -6,18 +6,17 @@
 %  Energy balance (S20,  Eq. 6): X = (1+St)/dTad * (T - Top)                (line)
 %  Stability      (Eq. 7)      : dX/dT|mass curve < (1+St)/dTad
 %  R_meth = (1-eps)*eta*r_tilde,   r_tilde = r_meth*rho_cat*1000   (S3, S39)
-%  Reaction rate: Koschany et al. (2016), Eqs. S34-S38, Table S2.
 
 clear; clc; close all;
 
-%% ---------------- Parameters: reference values of Table S1 ----------------
+%% Parameters: reference values of Table S1
 P.R      = 8.314;      % J/(mol K)
 P.p      = 5;          % bar          inlet pressure
 P.dTad   = 1074;       % K            adiabatic temperature rise
 P.tau    = 0.2;        % s            residence time
 P.eps    = 0.4;        % -            bed void fraction
 P.eta    = 1;          % -            effectiveness factor
-P.rhoCat = 2355.2;     % kg/m3        catalyst density
+P.rhoCat  = 2355.2;     % kg/m3        catalyst density
 P.cin    = 40;         % mol/m3       inlet CO2 concentration
 St0      = 3.4;        % -            Stanton number (reference)
 Top0     = 450;        % K            operating temperature (reference)
@@ -33,20 +32,20 @@ P.Kmixref= 0.88;  P.dHmix = -10.0e3;
 % Prefactor:  X = Cx * r_meth   (r_meth in mol/(g_cat s))
 P.Cx = P.tau/P.eps * (1-P.eps)*P.eta*P.rhoCat*1000 / P.cin;
 
-%% ---------------- Mass-balance curve X(T)  (Eq. 5 / S10) ----------------
+%% Mass-balance curve X(T)  (Eq. 5 / S10) 
 Tg  = linspace(400, 1000, 3000);        % reaction temperature range of Table S1
 Xm  = zeros(size(Tg));
 opts = optimset('TolX', 1e-12);
-for i = 1:numel(Tg)
+for  i = 1:numel(Tg)
     f     = @(X) X - P.Cx*rate(Tg(i), X, P);
     Xm(i) = fzero(f, [0, 1-1e-6], opts);        % f(0)<0, f(~1)>0 -> unique root
 end
 dXm = gradient(Xm, Tg);                         % mass-based thermal sensitivity dX/dT
 [dXmax, iStar] = max(dXm);
-Tstar = Tg(iStar);                              % inflection point T*
+Tstar = Tg(iStar);                              % inflection point T*  
 
-%% ---------------- Uniqueness / multiplicity criterion (Eq. 9, 10) ----------------
-slope0 = (1+St0)/P.dTad;
+%% Uniqueness / multiplicity criterion (Eq. 9, 10) 
+slope0  = (1+St0)/P.dTad;
 fprintf('Steepest mass-curve gradient : dX/dT = %.4f 1/K at T* = %.1f K\n', dXmax, Tstar);
 fprintf('Energy-line slope            : (1+St)/dTad = %.4f 1/K  (St = %g)\n', slope0, St0);
 if dXmax > slope0
@@ -56,11 +55,11 @@ else
 end
 fprintf('Uniqueness guaranteed for St >= %.1f (at any T_op)\n\n', dXmax*P.dTad - 1);
 
-%% ================= FIGURE 4: variation of operating temperature =================
+%% FIGURE 4: variation of operating temperature  
 TopV = linspace(400, 700, 1200);
 [parA, XA, TA, opA, nA] = sweep(TopV, 'Top', Tg, Xm, dXm, Tstar, Top0, St0, P);
 m = find(nA >= 3);
-fprintf('Fig.4: 3 steady states for T_op = %.1f ... %.1f K (St = %g)\n', TopV(m(1)), TopV(m(end)), St0);
+fprintf('Fig.4: 3 steady states for T_op   = %.1f ... %.1f K (St = %g)\n', TopV(m(1)), TopV(m(end)), St0);
 TopEx = [TopV(max(m(1)-round(0.25*numel(m)),1)), Top0, TopV(min(m(end)+round(0.25*numel(m)),numel(TopV)))];
 
 figure('Name','Fig 4','Position',[60 80 1150 470]);
@@ -76,11 +75,11 @@ for j = 1:3
     if TopEx(j) == Top0
         op = classify(Ts, s, Tstar);
         for k = 1:numel(Ts)
-            text(Ts(k)+8, Xs(k)-0.05, sprintf('OP %d', op(k)), 'FontWeight','bold');
+            text(Ts(k)+8, Xs(k)-0.05, sprintf('OP %d', op(k)), 'FontWeight','bold');  
         end
     end
 end
-xlabel('T / K'); ylabel('X_{CO_2}'); xlim([400 900]); ylim([0 1]);
+xlabel('T/K'); ylabel('X_{CO_2}'); xlim([400 900]); ylim([0 1]);
 title(sprintf('Mass and energy balance (St = %g)', St0)); legend('Location','northeast');
 
 subplot(1,2,2); hold on; box on; grid on;
@@ -88,8 +87,8 @@ plotBranches(parA, XA, opA);
 xlabel('T_{op} / K'); ylabel('X_{CO_2}'); ylim([0 1]); xlim([400 700]);
 title('Equilibrium points vs. operating temperature'); legend('Location','southeast');
 
-%% ================= FIGURE 5: variation of Stanton number =================
-StV = logspace(log10(0.05), log10(1035), 1500);      % Table S1 range of St
+%% FIGURE 5: variation of Stanton number
+StV = logspace(log10(0.05), log10(1035), 1500);      % Table S1 range  of St
 [parB, XB, TB, opB, nB] = sweep(StV, 'St', Tg, Xm, dXm, Tstar, Top0, St0, P);
 m = find(nB >= 3);
 if isempty(m)
@@ -126,7 +125,7 @@ set(gca, 'XScale', 'log');
 xlabel('St'); ylabel('X_{CO_2}'); ylim([0 1]); xlim([StV(1) StV(end)]);
 title('Equilibrium points vs. Stanton number'); legend('Location','northeast');
 
-%% ======================= local functions =======================
+%% local functions 
 function r = rate(T, X, P)
 % Koschany et al. (2016), Eqs. S34-S38, in mol/(g_cat s)
 % basis 1 mol CO2 in (H2:CO2 = 4): CO2 (1-X), H2 4(1-X), CH4 X, H2O 2X, total 5-2X
@@ -167,10 +166,10 @@ function [par, Xs, Ts, op, nSS] = sweep(vals, mode, Tg, Xm, dXm, Tstar, Top0, St
         if strcmp(mode,'Top'), Top = vals(i); St = St0;
         else,                  Top = Top0;    St = vals(i); end
         [T, X, s] = steadyStates(Tg, Xm, dXm, Top, St, P);
-        par = [par, vals(i)*ones(size(X))];  %#ok<AGROW>
-        Xs  = [Xs, X];                        %#ok<AGROW>
-        Ts  = [Ts, T];                        %#ok<AGROW>
-        op  = [op, classify(T, s, Tstar)];    %#ok<AGROW>
+        par = [par, vals(i)*ones(size(X))];  
+        Xs  = [Xs, X];                        
+        Ts  = [Ts, T];                        
+        op  = [op, classify(T, s, Tstar)];   
         nSS(i) = numel(X);
     end
 end
